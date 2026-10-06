@@ -72,3 +72,10 @@ XLSX.writeFile(wb,'Nomina_Koffein_'+mes+'.xlsx');};
 
 render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+function totales(){const a=act();
+$('#tsal').value=m(a.reduce((s,e)=>s+(e.sueldo||0),0));
+$('#thx').value=m(a.reduce((s,e)=>s+(e.extra||0),0));}
+const _calc=calc;calc=function(){_calc();totales();};
+$('#prop').addEventListener('input',totales);
+totales();
+
