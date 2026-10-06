@@ -93,4 +93,92 @@ $('#lista').addEventListener('change',guardarNombres);
 n.forEach((nom,k)=>{let c=$('#lista').children;if(!c[k])$('#add').click();c=$('#lista').children;
 const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new Event('input',{bubbles:true}));}});})();
 
+/* ===== Exportación: un libro con una hoja por mes ===== */
+(function () {
+  const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+  function buscarHistorial() {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      try {
+        const d = JSON.parse(localStorage.getItem(k));
+        if (Array.isArray(d) && d.length && typeof d[0] === "object" && listaEmpleados(d[0]).length) return d;
+      } catch (e) {}
+    }
+    return [];
+  }
+
+  function listaEmpleados(sem) {
+    const l = sem.empleados || sem.employees || sem.rows || sem.data;
+    if (Array.isArray(l)) return l;
+    for (const v of Object.values(sem)) if (Array.isArray(v) && v.length && typeof v[0] === "object") return v;
+    return [];
+  }
+
+  function fechaSemana(s) {
+    const f = s.fecha || s.semana || s.date || s.inicio || s.start || s.weekStart || s.desde || s.id;
+    const d = new Date(f);
+    return isNaN(d) ? null : d;
+  }
+
+  const nombre = e => (e.nombre || e.name || e.empleado || "Sin nombre").toString().trim();
+  const total = e => Number(e.total ?? e.totalPagar ?? e.neto ?? e.pago ?? e.totalSemana ?? 0) || 0;
+
+  function exportarLibro() {
+    if (typeof XLSX === "undefined") { alert("No se cargó la librería de Excel. Revisa tu conexión."); return; }
+    const hist = buscarHistorial();
+    if (!hist.length) { alert("No hay semanas guardadas para exportar."); return; }
+
+    const porMes = {};
+    hist.forEach(s => {
+      const d = fechaSemana(s);
+      if (!d) return;
+      const clave = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+      (porMes[clave] = porMes[clave] || []).push({ d, s });
+    });
+
+    const wb = XLSX.utils.book_new();
+    Object.keys(porMes).sort().forEach(clave => {
+      const semanas = porMes[clave].sort((a, b) => a.d - b.d);
+      const etiquetas = semanas.map(x => "Sem " + x.d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }));
+      const empleados = [];
+      semanas.forEach(x => listaEmpleados(x.s).forEach(e => { if (!empleados.includes(nombre(e))) empleados.push(nombre(e)); }));
+
+      const filas = [["Empleado", ...etiquetas, "Total del mes"]];
+      const totCol = new Array(semanas.length).fill(0);
+      empleados.forEach(n => {
+        let suma = 0;
+        const celdas = semanas.map((x, i) => {
+          const e = listaEmpleados(x.s).find(e => nombre(e) === n);
+          const v = e ? total(e) : "";
+          if (v !== "") { suma += v; totCol[i] += v; }
+          return v;
+        });
+        filas.push([n, ...celdas, suma]);
+      });
+      filas.push(["TOTAL", ...totCol, totCol.reduce((a, b) => a + b, 0)]);
+
+      const ws = XLSX.utils.aoa_to_sheet(filas);
+      ws["!cols"] = [{ wch: 22 }, ...etiquetas.map(() => ({ wch: 13 })), { wch: 15 }];
+      const [y, m] = clave.split("-");
+      XLSX.utils.book_append_sheet(wb, ws, (MESES[+m - 1] + " " + y).slice(0, 31));
+    });
+
+    XLSX.writeFile(wb, "Nomina_Koffein.xlsx");
+  }
+
+  window.exportarLibro = exportarLibro;
+
+  // Hace que el botón de Excel que ya tienes use la nueva exportación
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("button, a");
+    if (b && /excel/i.test(b.textContent)) {
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+      exportarLibro();
+    }
+  }, true);
+})();
+
+
 
