@@ -93,75 +93,105 @@ $('#lista').addEventListener('change',guardarNombres);
 n.forEach((nom,k)=>{let c=$('#lista').children;if(!c[k])$('#add').click();c=$('#lista').children;
 const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new Event('input',{bubbles:true}));}});})();
 
-/* ===== Exportación: un libro con una hoja por mes ===== */
+/* ===== Exportación Koffein: un libro con una hoja por mes ===== */
 (function () {
   const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-  function buscarHistorial() {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      try {
-        const d = JSON.parse(localStorage.getItem(k));
-        if (Array.isArray(d) && d.length && typeof d[0] === "object" && listaEmpleados(d[0]).length) return d;
-      } catch (e) {}
+  // Lee una fecha "AAAA-MM-DD" sin que se recorra un día por la zona horaria
+  function aFecha(v) {
+    if (!v) return null;
+    const s = String(v);
+    const d = /^\d{4}-\d{2}-\d{2}/.test(s) ? new Date(s.slice(0, 10) + "T12:00:00") : new Date(s);
+    return isNaN(d) ? null : d;
+  }
+
+  // Encuentra la lista de empleados dentro de una semana guardada
+  function empleadosDe(sem) {
+    if (!sem || typeof sem !== "object") return [];
+    for (const v of Object.values(sem)) {
+      if (Array.isArray(v) && v.length && typeof v[0] === "object" && "nombre" in v[0]) return v;
     }
     return [];
   }
 
-  function listaEmpleados(sem) {
-    const l = sem.empleados || sem.employees || sem.rows || sem.data;
-    if (Array.isArray(l)) return l;
-    for (const v of Object.values(sem)) if (Array.isArray(v) && v.length && typeof v[0] === "object") return v;
-    return [];
+  function fechaDe(sem, clave) {
+    return aFecha(sem.ini || sem.inicio || sem.desde || sem.fecha || sem.semana || sem.start || clave);
   }
 
-  function fechaSemana(s) {
-    const f = s.fecha || s.semana || s.date || s.inicio || s.start || s.weekStart || s.desde || s.id;
-    const d = new Date(f);
-    return isNaN(d) ? null : d;
+  // Busca el historial de semanas en la memoria de la app
+  function buscarHistorial() {
+    let mejor = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k === "kof_emp" || k === "kof_prop") continue;
+      let d;
+      try { d = JSON.parse(localStorage.getItem(k)); } catch (e) { continue; }
+      if (!d || typeof d !== "object") continue;
+      const lista = Array.isArray(d)
+        ? d.map(s => ({ s, clave: null }))
+        : Object.entries(d).map(([clave, s]) => ({ s, clave }));
+      const validas = lista.filter(x => empleadosDe(x.s).length && fechaDe(x.s, x.clave));
+      if (validas.length > mejor.length) mejor = validas;
+    }
+    return mejor;
   }
 
-  const nombre = e => (e.nombre || e.name || e.empleado || "Sin nombre").toString().trim();
-  const total = e => Number(e.total ?? e.totalPagar ?? e.neto ?? e.pago ?? e.totalSemana ?? 0) || 0;
+  const num = v => Number(v) || 0;
 
   function exportarLibro() {
     if (typeof XLSX === "undefined") { alert("No se cargó la librería de Excel. Revisa tu conexión."); return; }
     const hist = buscarHistorial();
-    if (!hist.length) { alert("No hay semanas guardadas para exportar."); return; }
+    if (!hist.length) { alert("No encontré semanas guardadas para exportar."); return; }
 
+    // Agrupa las semanas por mes según la fecha de inicio
     const porMes = {};
-    hist.forEach(s => {
-      const d = fechaSemana(s);
-      if (!d) return;
+    hist.forEach(x => {
+      const d = fechaDe(x.s, x.clave);
       const clave = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
-      (porMes[clave] = porMes[clave] || []).push({ d, s });
+      (porMes[clave] = porMes[clave] || []).push({ d, s: x.s });
     });
 
     const wb = XLSX.utils.book_new();
+    const fmt = d => d ? d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) : "";
+
     Object.keys(porMes).sort().forEach(clave => {
       const semanas = porMes[clave].sort((a, b) => a.d - b.d);
-      const etiquetas = semanas.map(x => "Sem " + x.d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }));
-      const empleados = [];
-      semanas.forEach(x => listaEmpleados(x.s).forEach(e => { if (!empleados.includes(nombre(e))) empleados.push(nombre(e)); }));
+      const filas = [["Semana", "Empleado", "Días", "Horas extra", "Sueldo", "Horas extras ($)", "Propinas", "Total a pagar"]];
+      const resumen = {};
+      const T = [0, 0, 0, 0];
 
-      const filas = [["Empleado", ...etiquetas, "Total del mes"]];
-      const totCol = new Array(semanas.length).fill(0);
-      empleados.forEach(n => {
-        let suma = 0;
-        const celdas = semanas.map((x, i) => {
-          const e = listaEmpleados(x.s).find(e => nombre(e) === n);
-          const v = e ? total(e) : "";
-          if (v !== "") { suma += v; totCol[i] += v; }
-          return v;
+      semanas.forEach(x => {
+        const fin = aFecha(x.s.fin || x.s.hasta || x.s.end);
+        const etiqueta = fmt(x.d) + (fin ? " – " + fmt(fin) : "");
+        empleadosDe(x.s).filter(e => e.activo !== false).forEach(e => {
+          const sueldo = num(e.sueldo), extra = num(e.extra), prop = num(e.propina);
+          const tot = num(e.total) || sueldo + extra + prop;
+          filas.push([etiqueta, e.nombre, num(e.dias), num(e.hx), sueldo, extra, prop, tot]);
+          T[0] += sueldo; T[1] += extra; T[2] += prop; T[3] += tot;
+          const r = resumen[e.nombre] = resumen[e.nombre] || [0, 0, 0, 0, 0, 0];
+          r[0] += num(e.dias); r[1] += num(e.hx); r[2] += sueldo; r[3] += extra; r[4] += prop; r[5] += tot;
         });
-        filas.push([n, ...celdas, suma]);
       });
-      filas.push(["TOTAL", ...totCol, totCol.reduce((a, b) => a + b, 0)]);
+
+      filas.push(["TOTAL DEL MES", "", "", "", ...T]);
+      filas.push([]);
+      filas.push(["RESUMEN POR EMPLEADO", "", "Días", "Horas extra", "Sueldo", "Horas extras ($)", "Propinas", "Total a pagar"]);
+      Object.entries(resumen).forEach(([n, r]) => filas.push(["", n, ...r]));
 
       const ws = XLSX.utils.aoa_to_sheet(filas);
-      ws["!cols"] = [{ wch: 22 }, ...etiquetas.map(() => ({ wch: 13 })), { wch: 15 }];
-      const [y, m] = clave.split("-");
-      XLSX.utils.book_append_sheet(wb, ws, (MESES[+m - 1] + " " + y).slice(0, 31));
+      ws["!cols"] = [{ wch: 18 }, { wch: 22 }, { wch: 7 }, { wch: 11 }, { wch: 13 }, { wch: 16 }, { wch: 13 }, { wch: 15 }];
+
+      // Formato de moneda en las columnas de dinero
+      const rango = XLSX.utils.decode_range(ws["!ref"]);
+      for (let R = 1; R <= rango.e.r; R++) {
+        for (let C = 4; C <= 7; C++) {
+          const c = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+          if (c && typeof c.v === "number") c.z = '"$"#,##0.00';
+        }
+      }
+
+      const [y, mm] = clave.split("-");
+      XLSX.utils.book_append_sheet(wb, ws, (MESES[+mm - 1] + " " + y).slice(0, 31));
     });
 
     XLSX.writeFile(wb, "Nomina_Koffein.xlsx");
@@ -169,7 +199,7 @@ const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new 
 
   window.exportarLibro = exportarLibro;
 
-  // Hace que el botón de Excel que ya tienes use la nueva exportación
+  // El botón de Excel que ya tienes usará esta exportación
   document.addEventListener("click", ev => {
     const b = ev.target.closest("button, a");
     if (b && /excel/i.test(b.textContent)) {
