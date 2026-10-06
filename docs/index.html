@@ -9,10 +9,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Nómina Koffein">
 <link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="app.css?v=6">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<style>
-:root{--c:#4b2e1e;--c2:#7a4a2c;--cr:#f6efe6;--o:#c8963e;--b:#e2d5c5}
-*{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:var(--cr);color:#2b1a10;padding-bottom:40px}
-header{background:var(--c);color:#fff;text-align:center;padding:14px 10px;padding-top:calc(18px + env(safe-area-inset-top))}
-.logo{font-size
+</head>
+<body>
+<header><img src="icon.svg" class="logo" alt="Koffein"><h1>Nómina Semanal Koffein</h1></header>
+<section class="box">
+<label>Semana del<input type="date" id="ini"></label>
+<label>al<input type="date" id="fin"></label>
+<label>Total de propinas de la semana ($)<input type="number" id="prop" inputmode="decimal" value="0"></label>
+</section>
+<div id="lista"></div>
+<div class="acc">
+<button id="add">+ Agregar empleado</button>
+<button id="save">💾 Guardar semana</button>
+<button id="xls">📊 Exportar Excel del mes</button>
+<button onclick="window.print()">🖨️ Imprimir / PDF</button>
+</div>
+<script src="app.js?v=6"></script>
+</body>
+</html>
