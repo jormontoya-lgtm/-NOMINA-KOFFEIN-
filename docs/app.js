@@ -78,6 +78,7 @@ $('#thx').value=m(a.reduce((s,e)=>s+(e.extra||0),0));}
 const _calc=calc;calc=function(){_calc();totales();};
 $('#prop').addEventListener('input',totales);
 totales();
+
 /* Días con decimales */
 function decimales(){document.querySelectorAll('#lista input[type=number]').forEach(i=>{i.step='any';i.inputMode='decimal';});}
 new MutationObserver(decimales).observe($('#lista'),{childList:true,subtree:true});decimales();
