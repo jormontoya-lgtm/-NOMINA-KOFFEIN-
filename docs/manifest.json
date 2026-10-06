@@ -1,10 +1,13 @@
 {
-  "name": "nomina-koffein",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "@capacitor/android": "latest",
-    "@capacitor/cli": "latest",
-    "@capacitor/core": "latest"
-  }
+  "name": "Nómina Koffein",
+  "short_name": "Koffein",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b2a20",
+  "icons": [
+    { "src": "icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
 }
