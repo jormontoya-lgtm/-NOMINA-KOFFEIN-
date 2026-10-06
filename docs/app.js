@@ -78,4 +78,18 @@ $('#thx').value=m(a.reduce((s,e)=>s+(e.extra||0),0));}
 const _calc=calc;calc=function(){_calc();totales();};
 $('#prop').addEventListener('input',totales);
 totales();
+/* Días con decimales */
+function decimales(){document.querySelectorAll('#lista input[type=number]').forEach(i=>{i.step='any';i.inputMode='decimal';});}
+new MutationObserver(decimales).observe($('#lista'),{childList:true,subtree:true});decimales();
+
+/* Recordar nombres de la semana pasada */
+function campoNombre(c){return c.querySelector('input[type=text],input:not([type])');}
+function guardarNombres(){const n=[...$('#lista').children].map(campoNombre).filter(Boolean).map(i=>i.value.trim()).filter(Boolean);
+if(n.length)localStorage.setItem('kf_nombres',JSON.stringify(n));}
+$('#save').addEventListener('click',guardarNombres);
+$('#lista').addEventListener('change',guardarNombres);
+(function cargarNombres(){const n=JSON.parse(localStorage.getItem('kf_nombres')||'[]');
+n.forEach((nom,k)=>{let c=$('#lista').children;if(!c[k])$('#add').click();c=$('#lista').children;
+const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new Event('input',{bubbles:true}));}});})();
+
 
