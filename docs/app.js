@@ -9,7 +9,7 @@ let emp=LS('kof_emp',null);
 if(!emp){emp=[];for(let i=1;i<=7;i++)emp.push({id:Date.now()+i,nombre:'Empleado '+i,sal:0,dias:6,hx:0,activo:true});SV('kof_emp',emp);}
 const act=()=>emp.filter(e=>e.activo);
 
-(function fechas(){const d=new Date(),w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);
+(function(){const d=new Date(),w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);
 const f=x=>x.toISOString().slice(0,10);$('#ini').value=f(d);d.setDate(d.getDate()+6);$('#fin').value=f(d);
 $('#prop').value=localStorage.getItem('kof_prop')||0;})();
 
@@ -50,11 +50,25 @@ act().forEach(e=>firma(document.getElementById('f'+e.id)));calc();}
 $('#lista').addEventListener('input',ev=>{const t=ev.target,id=t.dataset.id;if(!id)return;
 emp.find(x=>x.id==id)[t.dataset.k]=t.value;calc();});
 $('#lista').addEventListener('click',ev=>{const t=ev.target,id=t.dataset.id;if(!id)return;
-if(t.classList.contains('baja')&&confirm('¿Dar de baja a este empleado? Su historial se conserva.')){emp.find(x=>x.id==id).activo=false;render();}
+if(t.classList.contains('baja')&&confirm('¿Dar de baja a este empleado? Su historial se conserva.')){emp.find(x=>x.id==id).activo=false;SV('kof_emp',emp);render();}
 if(t.classList.contains('lim')){const c=document.getElementById('f'+id);c.getContext('2d').clearRect(0,0,c.width,c.height);}});
 $('#prop').addEventListener('input',calc);
 $('#add').onclick=()=>{emp.push({id:Date.now(),nombre:'Nuevo empleado',sal:0,dias:6,hx:0,activo:true});render();};
 
 $('#save').onclick=()=>{const ini=$('#ini').value;if(!ini)return alert('Indica la fecha de inicio');calc();
 const h=LS('kof_hist',[]).filter(w=>w.ini!==ini);
-h.push({ini,fin:$('#fin').value,rows:act().map(e=>({id:e.id,
+h.push({ini,fin:$('#fin').value,rows:act().map(e=>({id:e.id,nombre:e.nombre,total:e.total}))});
+SV('kof_hist',h);alert('Semana guardada ✅');};
+
+$('#xls').onclick=()=>{const mes=$('#ini').value.slice(0,7);
+const sem=LS('kof_hist',[]).filter(w=>w.ini.slice(0,7)===mes).sort((a,b)=>a.ini<b.ini?-1:1);
+if(!sem.length)return alert('No hay semanas guardadas en este mes');
+if(typeof XLSX==='undefined')return alert('Se necesita internet para exportar Excel');
+const ids=[],nom={};sem.forEach(w=>w.rows.forEach(r=>{if(!ids.includes(r.id))ids.push(r.id);nom[r.id]=r.nombre}));
+const data=[['Empleado',...sem.map(w=>w.ini+' a '+w.fin),'Total mes']];
+ids.forEach(id=>{let t=0;const row=[nom[id]];sem.forEach(w=>{const r=w.rows.find(x=>x.id==id);const v=r?Math.round(r.total*100)/100:0;t+=v;row.push(v)});row.push(Math.round(t*100)/100);data.push(row)});
+const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Nomina');
+XLSX.writeFile(wb,'Nomina_Koffein_'+mes+'.xlsx');};
+
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
