@@ -9,7 +9,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Nómina Koffein">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="app.css?v=6">
+<link rel="stylesheet" href="app.css?v=7">
+<style>.auto{background:#f6efe6;font-weight:700;color:#4b2e1e}</style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -17,6 +18,8 @@
 <section class="box">
 <label>Semana del<input type="date" id="ini"></label>
 <label>al<input type="date" id="fin"></label>
+<label>Percepciones salariales totales ($)<input type="text" id="tsal" class="auto" readonly></label>
+<label>Total de horas extras ($)<input type="text" id="thx" class="auto" readonly></label>
 <label>Total de propinas de la semana ($)<input type="number" id="prop" inputmode="decimal" value="0"></label>
 </section>
 <div id="lista"></div>
@@ -26,6 +29,6 @@
 <button id="xls">📊 Exportar Excel del mes</button>
 <button onclick="window.print()">🖨️ Imprimir / PDF</button>
 </div>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
