@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Nómina Semanal Koffein</title>
+<style>
+  :root{
+    --cafe:#2B1B10; --naranja:#D9822B; --crema:#FAF6F0;
+    --verde:#2E7D5B; --gris:#7A7A7A; --borde:#E8E1D8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
+  body{background:var(--crema);color:#222;max-width:480px;margin:auto;padding-bottom:90px}
+
+  header{background:var(--cafe);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+  .logo{display:flex;align-items:center;gap:8px}
+  .logo svg{width:34px;height:34px}
+  .logo h1{font-family:Georgia,serif;font-size:20px;letter-spacing:2px}
+  .tag{background:#4A3220;color:#F5C26B;font-size:11px;padding:4px 10px;border-radius:20px;margin-left:auto}
+
+  .card{background:#fff;margin:14px;border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  .titulo{font-size:12px;font-weight:700;color:var(--gris);letter-spacing:1px;margin-bottom:10px}
+  .empresa h2{font-family:Georgia,serif;color:var(--cafe);font-size:22px;margin-bottom:6px}
+  .empresa p{font-size:13px;color:#555;line-height:1.5}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label{font-size:12px;color:var(--gris);display:block;margin-bottom:4px}
+  input{width:100%;padding:11px;border:1px solid var(--borde);border-radius:10px;font-size:16px;background:#fff}
+  .badge{display:inline-block;background:#FDF0C8;color:#9A5B00;font-weight:600;font-size:13px;padding:6px 10px;border-radius:8px}
+
+  .resumen .fila{display:flex;justify-content:space-between;font-size:14px;margin:6px 0}
+  .total{font-size:24px;font-weight:800;color:var(--verde)}
+
+  .emp-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .avatar{width:46px;height:46px;flex-shrink:0;border-radius:50%;background:#EFE6DA;display:flex;align-items:center;justify-content:center;font-family:Georgia;font-size:20px;font-weight:700;color:var(--cafe)}
+  .emp-head h3{font-size:18px}
+  .emp-head small{color:#555;font-size:12px}
+  .neto{margin-left:auto;text-align:right}
+  .neto span{font-size:11px;color:var(--gris)}
+  .neto b{display:block;color:var(--verde);font-size:19px}
+
+  .desglose{background:var(--crema);border:1px solid var(--borde);border-radius:12px;padding:14px;margin-top:14px}
+  .desglose .cab{display:flex;justify-content:space-between;font-size:13px;font-weight:700;border-bottom:1px solid var(--borde);padding-bottom:8px;margin-bottom:8px}
+  .desglose .cab span{font-weight:400;color:var(--gris)}
+  .perc{color:var(--verde);font-weight:700;font-size:13px;margin-bottom:6px}
+  .linea{display:flex;justify-content:space-between;font-size:14px;margin:6px 0}
+  .linea.tot{border-top:1px solid var(--borde);padding-top:8px;font-weight:700}
+  .linea.tot b{color:var(--verde)}
+
+  .firma-head{display:flex;justify-content:space-between;margin:18px 0 8px;font-weight:700;font-size:14px}
+  .firma-head a{font-weight:400;font-size:12px;color:var(--gris)}
+  canvas{width:100%;height:160px;border:2px dashed #CFC6BA;border-radius:12px;background:#FCFAF7;touch-action:none;display:block}
+
+  .leyenda{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:14px;margin-top:12px}
+  .leyenda h4{display:flex;align-items:center;gap:6px;font-size:14px;color:#3A3A3A;margin-bottom:8px}
+  .leyenda p{font-size:12px;color:var(--gris);line-height:1.6;text-align:justify}
+  .leyenda p b{color:#5A5A5A}
+
+  .acciones{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--borde);display:flex;gap:10px;padding:12px}
+  .btn{flex:1;padding:13px;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer}
+  .btn.sec{background:#F1ECE5;color:var(--cafe)}
+  .btn.pri{background:var(--naranja);color:#fff}
+
+  @media print{
+    header{position:static}
+    .acciones,.firma-head a{display:none}
+    .card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 64 64">
+      <path d="M22 6c-3 4 3 6 0 10M30 6c-3 4 3 6 0 10" stroke="#F5C26B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M8 22h40v18a14 14 0 0 1-14 14H22A14 14 0 0 1 8 40z" fill="#F5C26B"/>
+      <path d="M48 27h4a7 7 0 0 1 0 14h-4" stroke="#F5C26B" stroke-width="4" fill="none"/>
+    </svg>
+    <h1>KOFFEIN</h1>
+  </div>
+  <span class="tag">Nómina Semanal</span>
+</header>
+
+<section class="card empresa">
+  <h2>☕ Koffein Café</h2>
+  <p><b>Razón Social:</b> Koffein Querétaro S.A. de C.V.<br>
+     <b>RFC:</b> KOF210815-KA9<br>
+     <b>Ubicación:</b> Av. Universidad 124, Col. Centro, Querétaro, Qro. CP 76000<br>
+     <b>Registro Patronal IMSS:</b> B3810294101</p>
+</section>
+
+<section class="card">
+  <div class="titulo">DETALLES DEL PERIODO</div>
+  <div class="grid2">
+    <div><label>Fecha Inicio</label><input type="date" id="fIni" value="2026-09-21"></div>
+    <div><label>Fecha Fin</label><input type="date" id="fFin" value="2026-09-27"></div>
+    <div><label>Fecha de Pago</label><input type="date" id="fPago" value="2026-09-28"></div>
+    <div><label>Tipo de Nómina</label><span class="badge">Semanal ordinaria</span></div>
+  </div>
+</section>
+
+<section class="card resumen">
+  <div class="titulo">RESUMEN GLOBAL SEMANAL</div>
+  <div class="fila"><span>Empleados:</span><b id="gEmp">0</b></div>
+  <div class="fila"><span>Total Percepciones:</span><b id="gPerc">$0.00</b></div>
+  <div class="fila"><span>Total Propinas:</span><b id="gProp">$0.00</b></div>
+  <div class="fila" style="margin-top:10px"><b>Total a Dispersar:</b><span class="total" id="gTotal">$0.00</span></div>
+  <div class="fila"><span>Firmas completadas:</span><b id="gFirmas">0 / 0</b></div>
+</section>
+
+<div id="empleados"></div>
+
+<div class="acciones">
+  <button class="btn sec" id="btnCSV">Exportar CSV</button>
+  <button class="btn pri" onclick="window.print()">Imprimir / PDF</button>
+</div>
+
+<script>
+/* ===== DATOS DE EMPLEADOS (edita aquí) ===== */
+const empleados = [
+  { nombre:"Nancy",     puesto:"Encargada de Barra / Head Barista", curp:"MEMC940512HQRFRL09", salario:480, dias:6, extras:450, propinas:600 },
+  { nombre:"Empleado 2", puesto:"Barista",            curp:"XXXX000000XXXXXX00", salario:350, dias:6, extras:0,   propinas:500 },
+  { nombre:"Empleado 3", puesto:"Barista",            curp:"XXXX000000XXXXXX00", salario:350, dias:6, extras:150, propinas:500 },
+  { nombre:"Empleado 4", puesto:"Cajero(a)",          curp:"XXXX000000XXXXXX00", salario:330, dias:6, extras:0,   propinas:400 },
+  { nombre:"Empleado 5", puesto:"Cocina / Repostería", curp:"XXXX000000XXXXXX00", salario:380, dias:6, extras:200, propinas:350 },
+  { nombre:"Empleado 6", puesto:"Mesero(a)",          curp:"XXXX000000XXXXXX00", salario:300, dias:6, extras:0,   propinas:700 },
+  { nombre:"Empleado 7", puesto:"Limpieza / Apoyo",   curp:"XXXX000000XXXXXX00", salario:300, dias:6, extras:0,   propinas:250 }
+];
+
+const $ = id => document.getElementById(id);
+const mx = n => n.toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+const firmas = new Array(empleados.length).fill(false);
+
+/* ===== Render de tarjetas ===== */
+const cont = $('empleados');
+empleados.forEach((e,i)=>{
+  cont.insertAdjacentHTML('beforeend',`
+  <section class="card">
+    <div class="emp-head">
+      <div class="avatar">${e.nombre.charAt(0).toUpperCase()}</div>
+      <div>
+        <h3>${e.nombre}</h3>
+        <small>💼 ${e.puesto}</small><br>
+        <small>CURP: ${e.curp}</small>
+      </div>
+      <div class="neto"><span>Neto a Recibir</span><b id="neto${i}">$0.00</b></div>
+    </div>
+
+    <div class="grid2">
+      <div><label>Salario Diario ($)</label><input type="number" min="0" data-i="${i}" data-k="salario" value="${e.salario}"></div>
+      <div><label>Días Trab.</label><input type="number" min="0" max="7" data-i="${i}" data-k="dias" value="${e.dias}"></div>
+      <div><label>Horas Extras ($)</label><input type="number" min="0" data-i="${i}" data-k="extras" value="${e.extras}"></div>
+      <div><label>Propinas ($)</label><input type="number" min="0" data-i="${i}" data-k="propinas" value="${e.propinas}"></div>
+    </div>
+
+    <div class="desglose">
+      <div class="cab">DESGLOSE DE CONCEPTOS <span id="base${i}"></span></div>
+      <div class="perc">PERCEPCIONES (+)</div>
+      <div class="linea"><span id="lbl${i}"></span><span id="sueldo${i}"></span></div>
+      <div class="linea"><span>Horas Extras:</span><span id="ext${i}"></span></div>
+      <div class="linea"><span>Propinas:</span><span id="prop${i}"></span></div>
+      <div class="linea tot"><span>Total Percepciones:</span><b id="tot${i}"></b></div>
+    </div>
+
+    <div class="firma-head">✍️ Firma Digital de Conformidad <a href="#" data-limpiar="${i}">Limpiar trazo</a></div>
+    <canvas id="firma${i}"></canvas>
+
+    <div class="leyenda">
+      <h4>⚖️ Declaración de Conformidad Laboral (Art. 804 LFT México)</h4>
+      <p>"Recibí de la empresa <b>Koffein Querétaro S.A. de C.V.</b> la cantidad neta
+      especificada en el presente recibo, por concepto de pago total de mi salario,
+      incentivos y prestaciones correspondientes a la semana de trabajo indicada,
+      no adeudándome cantidad alguna por concepto de horas extraordinarias, salarios
+      devengados, ni ningún otro derivado de la relación de trabajo. Otorgo el más
+      amplio finiquito que en derecho proceda."</p>
+    </div>
+  </section>`);
+});
+
+/* ===== Cálculos ===== */
+function calcular(){
+  let gPerc=0, gProp=0;
+  empleados.forEach((e,i)=>{
+    const sueldo = e.salario * e.dias;
+    const total  = sueldo + e.extras + e.propinas;
+    e.sueldo = sueldo; e.total = total;
+    $('base'+i).textContent   = `Salario: ${mx(e.salario)}/día`;
+    $('lbl'+i).textContent    = `Sueldo Ordinario (${e.dias} d):`;
+    $('sueldo'+i).textContent = mx(sueldo);
+    $('ext'+i).textContent    = mx(e.extras);
+    $('prop'+i).textContent   = mx(e.propinas);
+    $('tot'+i).textContent    = mx(total);
+    $('neto'+i).textContent   = mx(total);
+    gPerc += sueldo + e.extras; gProp += e.propinas;
+  });
+  $('gEmp').textContent   = empleados.length;
+  $('gPerc').textContent  = mx(gPerc);
+  $('gProp').textContent  = mx(gProp);
+  $('gTotal').textContent = mx(gPerc + gProp);
+  $('gFirmas').textContent = `${firmas.filter(Boolean).length} / ${empleados.length}`;
+}
+
+document.querySelectorAll('input[data-k]').forEach(inp=>{
+  inp.addEventListener('input',()=>{
+    empleados[inp.dataset.i][inp.dataset.k] = Math.max(0, +inp.value || 0);
+    calcular();
+  });
+});
+
+/* ===== Firmas táctiles ===== */
+empleados.forEach((_,i)=>{
+  const c = $('firma'+i), ctx = c.getContext('2d'); let dib = false;
+  c.width = c.offsetWidth; c.height = c.offsetHeight;
+  ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#2B1B10';
+  const pos = ev => { const r = c.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
+  c.addEventListener('pointerdown', ev => { dib = true; const p = pos(ev); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+  c.addEventListener('pointermove', ev => {
+    if(!dib) return; const p = pos(ev); ctx.lineTo(p.x, p.y); ctx.stroke();
+    if(!firmas[i]){ firmas[i] = true; calcular(); }
+  });
+  ['pointerup','pointerleave'].forEach(t => c.addEventListener(t, () => dib = false));
+});
+document.querySelectorAll('[data-limpiar]').forEach(a=>{
+  a.addEventListener('click', ev=>{
+    ev.preventDefault(); const i = a.dataset.limpiar, c = $('firma'+i);
+    c.getContext('2d').clearRect(0,0,c.width,c.height);
+    firmas[i] = false; calcular();
+  });
+});
+
+/* ===== Exportar CSV ===== */
+$('btnCSV').addEventListener('click',()=>{
+  const enc = ['Nombre','Puesto','CURP','Salario Diario','Días','Sueldo Ordinario','Horas Extras','Propinas','Neto','Firmado'];
+  const filas = empleados.map((e,i)=>[e.nombre,e.puesto,e.curp,e.salario,e.dias,e.sueldo,e.extras,e.propinas,e.total,firmas[i]?'Sí':'No']);
+  const csv = [`Periodo,${$('fIni').value} a ${$('fFin').value},Pago,${$('fPago').value}`, enc.join(','),
+               ...filas.map(f=>f.map(v=>`"${v}"`).join(','))].join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `Nomina_Koffein_${$('fIni').value}_${$('fFin').value}.csv`;
+  a.click();
+});
+
+calcular();
+</script>
+</body>
+</html>
