@@ -219,6 +219,34 @@ const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new 
     }
   }, true);
 })();
+/* ===== Número de semana en pantalla ===== */
+(function () {
+  function numSemana(fecha) {
+    const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+    const dia = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dia);
+    const inicioAnio = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - inicioAnio) / 86400000 + 1) / 7);
+  }
+
+  let ultimo = null;
+  function actualizar() {
+    const ini = document.getElementById("ini");
+    const out = document.getElementById("nosem");
+    if (!ini || !out) return;
+    if (ini.value === ultimo) return;
+    ultimo = ini.value;
+    if (!ini.value) { out.value = ""; return; }
+    const f = new Date(ini.value + "T12:00:00");
+    out.value = isNaN(f) ? "" : "Semana " + numSemana(f);
+  }
+
+  document.addEventListener("input", e => { if (e.target.id === "ini") actualizar(); });
+  document.addEventListener("change", e => { if (e.target.id === "ini") actualizar(); });
+  window.addEventListener("load", actualizar);
+  // Por si la app llena la fecha sola (al cargar o abrir una semana guardada)
+  setInterval(actualizar, 800);
+})();
 
 
 
