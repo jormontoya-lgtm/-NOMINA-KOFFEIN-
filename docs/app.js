@@ -247,6 +247,23 @@ const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new 
   // Por si la app llena la fecha sola (al cargar o abrir una semana guardada)
   setInterval(actualizar, 800);
 })();
+// ===== Nombre de archivo con semana y fecha =====
+function kofSemanaISO(fecha) {
+  const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+  const dia = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dia);
+  const inicioAnio = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - inicioAnio) / 86400000 + 1) / 7);
+}
+
+function kofNombreArchivo() {
+  const hoy = new Date();
+  const fecha = hoy.getFullYear() + '-' +
+    String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+    String(hoy.getDate()).padStart(2, '0');
+  const semana = String(kofSemanaISO(hoy)).padStart(2, '0');
+  return 'Nomina_Koffein_Sem' + semana + '_' + fecha + '.xlsx';
+}
 
 
 
