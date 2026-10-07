@@ -23,3 +23,34 @@ button{border:0;border-radius:10px;padding:10px 12px;font-size:14px;background:v
 .acc{display:grid;gap:10px;margin:12px}
 .acc button{padding:14px;font-size:16px}
 @media print{.acc,.baja,.lim{display:none}.card{break-inside:avoid}}
+/* Arreglo de campos de fecha en iPhone */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  background-color: #fff;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin: 0;
+}
+
+/* Evita que cualquier campo se salga de su tarjeta */
+input, select {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
