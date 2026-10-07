@@ -2,12 +2,13 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,Roboto,sans-serif;background:var(--cr);color:#2b1a10;padding-bottom:40px}
 header{background:var(--c);color:#fff;text-align:center;padding:12px;padding-top:calc(14px + env(safe-area-inset-top))}
-.logo{width:64px;height:64px;border-radius:14px;background:#fff}
+.logo{width:64px;height:64px;border-radius:14px;background:#fff;object-fit:contain}
 h1{font-size:20px;margin:6px 0 0}
 .box,.card{background:#fff;margin:12px;padding:14px;border-radius:14px;border:1px solid var(--b)}
 label{display:block;font-size:13px;color:var(--c2);margin-bottom:8px}
-input{width:100%;padding:10px;font-size:16px;border:1px solid var(--b);border-radius:8px;margin-top:4px}
+input{width:100%;max-width:100%;min-width:0;padding:10px;font-size:16px;border:1px solid var(--b);border-radius:8px;margin-top:4px;background:#fff;color:inherit;font-family:inherit}
 .top{display:flex;gap:8px}
+.top > *{flex:1 1 0;min-width:0}
 .nom{font-weight:700;font-size:17px;color:var(--c)}
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
 .t{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
@@ -22,35 +23,10 @@ button{border:0;border-radius:10px;padding:10px 12px;font-size:14px;background:v
 .baja,.lim{background:#a33;font-size:12px;padding:6px 10px}
 .acc{display:grid;gap:10px;margin:12px}
 .acc button{padding:14px;font-size:16px}
-@media print{.acc,.baja,.lim{display:none}.card{break-inside:avoid}}
+
 /* Arreglo de campos de fecha en iPhone */
-input[type="date"] {
-  -webkit-appearance: none;
-  appearance: none;
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  margin: 0;
-  background-color: #fff;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-}
+input[type="date"]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;height:44px;text-align:left;background:#fff}
+input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type="date"]::-webkit-calendar-picker-indicator{margin:0}
 
-input[type="date"]::-webkit-date-and-time-value {
-  text-align: left;
-  margin: 0;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  margin: 0;
-}
-
-/* Evita que cualquier campo se salga de su tarjeta */
-input, select {
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
+@media print{.acc,.baja,.lim{display:none}.card{break-inside:avoid}}
