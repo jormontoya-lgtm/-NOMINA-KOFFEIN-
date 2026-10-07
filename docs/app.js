@@ -105,6 +105,15 @@ const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new 
     return isNaN(d) ? null : d;
   }
 
+  // Número de semana del año (ISO: la semana empieza en lunes)
+  function numSemana(fecha) {
+    const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+    const dia = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dia);
+    const inicioAnio = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - inicioAnio) / 86400000 + 1) / 7);
+  }
+
   // Encuentra la lista de empleados dentro de una semana guardada
   function empleadosDe(sem) {
     if (!sem || typeof sem !== "object") return [];
@@ -156,35 +165,36 @@ const i=c[k]&&campoNombre(c[k]);if(i&&!i.value){i.value=nom;i.dispatchEvent(new 
 
     Object.keys(porMes).sort().forEach(clave => {
       const semanas = porMes[clave].sort((a, b) => a.d - b.d);
-      const filas = [["Semana", "Empleado", "Días", "Horas extra", "Sueldo", "Horas extras ($)", "Propinas", "Total a pagar"]];
+      const filas = [["No. semana", "Semana", "Empleado", "Días", "Horas extra", "Sueldo", "Horas extras ($)", "Propinas", "Total a pagar"]];
       const resumen = {};
       const T = [0, 0, 0, 0];
 
       semanas.forEach(x => {
         const fin = aFecha(x.s.fin || x.s.hasta || x.s.end);
         const etiqueta = fmt(x.d) + (fin ? " – " + fmt(fin) : "");
+        const noSem = "Sem " + numSemana(x.d);
         empleadosDe(x.s).filter(e => e.activo !== false).forEach(e => {
           const sueldo = num(e.sueldo), extra = num(e.extra), prop = num(e.propina);
           const tot = num(e.total) || sueldo + extra + prop;
-          filas.push([etiqueta, e.nombre, num(e.dias), num(e.hx), sueldo, extra, prop, tot]);
+          filas.push([noSem, etiqueta, e.nombre, num(e.dias), num(e.hx), sueldo, extra, prop, tot]);
           T[0] += sueldo; T[1] += extra; T[2] += prop; T[3] += tot;
           const r = resumen[e.nombre] = resumen[e.nombre] || [0, 0, 0, 0, 0, 0];
           r[0] += num(e.dias); r[1] += num(e.hx); r[2] += sueldo; r[3] += extra; r[4] += prop; r[5] += tot;
         });
       });
 
-      filas.push(["TOTAL DEL MES", "", "", "", ...T]);
+      filas.push(["TOTAL DEL MES", "", "", "", "", ...T]);
       filas.push([]);
-      filas.push(["RESUMEN POR EMPLEADO", "", "Días", "Horas extra", "Sueldo", "Horas extras ($)", "Propinas", "Total a pagar"]);
-      Object.entries(resumen).forEach(([n, r]) => filas.push(["", n, ...r]));
+      filas.push(["RESUMEN POR EMPLEADO", "", "", "Días", "Horas extra", "Sueldo", "Horas extras ($)", "Propinas", "Total a pagar"]);
+      Object.entries(resumen).forEach(([n, r]) => filas.push(["", "", n, ...r]));
 
       const ws = XLSX.utils.aoa_to_sheet(filas);
-      ws["!cols"] = [{ wch: 18 }, { wch: 22 }, { wch: 7 }, { wch: 11 }, { wch: 13 }, { wch: 16 }, { wch: 13 }, { wch: 15 }];
+      ws["!cols"] = [{ wch: 11 }, { wch: 18 }, { wch: 22 }, { wch: 7 }, { wch: 11 }, { wch: 13 }, { wch: 16 }, { wch: 13 }, { wch: 15 }];
 
       // Formato de moneda en las columnas de dinero
       const rango = XLSX.utils.decode_range(ws["!ref"]);
       for (let R = 1; R <= rango.e.r; R++) {
-        for (let C = 4; C <= 7; C++) {
+        for (let C = 5; C <= 8; C++) {
           const c = ws[XLSX.utils.encode_cell({ r: R, c: C })];
           if (c && typeof c.v === "number") c.z = '"$"#,##0.00';
         }
