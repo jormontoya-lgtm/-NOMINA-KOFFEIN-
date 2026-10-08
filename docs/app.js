@@ -100,4 +100,83 @@ function guardarSemana() {
   if (!ini || !fin) { alert('Pon la fecha de inicio y fin de la semana'); return; }
   const h = LV('kof_hist', []);
   const reg = { semana: kofSemanaISO(ini), ini, fin, propinas: parseFloat($('prop').value) || 0, recibos: calcular() };
-  const i = h.findIndex(x
+  const i = h.findIndex(x => x.ini === ini);
+  if (i >= 0) h[i] = reg; else h.push(reg);
+  SV('kof_hist', h);
+  localStorage.setItem('kof_ultimoGuardado', String(Date.now()));
+  kofRevisarAviso();
+  if (confirm('Semana guardada ✅\n¿Quieres exportar el Excel ahora?')) exportarLibro();
+}
+
+// ===== Exportar Excel =====
+function exportarLibro() {
+  if (typeof XLSX === 'undefined') { alert('No se pudo cargar el exportador. Revisa tu conexión a internet.'); return; }
+  const wb = XLSX.utils.book_new();
+  const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
+
+  const actual = calcular().map(e => ({
+    Empleado: e.nombre, Dias: e.dias, 'Horas extra': e.extras,
+    Sueldo: r2(e.sueldo), 'Pago extra': r2(e.extra), Propinas: r2(e.propina), Total: r2(e.total)
+  }));
+  const nSem = $('semana').dataset.n || 'Actual';
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(actual.length ? actual : [{ Empleado: 'Sin empleados' }]), ('Semana ' + nSem).slice(0, 31));
+
+  const filas = [];
+  LV('kof_hist', []).forEach(s => (s.recibos || []).forEach(e => filas.push({
+    Semana: s.semana, Inicio: s.ini, Fin: s.fin, Empleado: e.nombre, Dias: e.dias, 'Horas extra': e.extras,
+    Sueldo: r2(e.sueldo), 'Pago extra': r2(e.extra), Propinas: r2(e.propina), Total: r2(e.total)
+  })));
+  if (filas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filas), 'Historial');
+
+  XLSX.writeFile(wb, kofNombreArchivo());
+  localStorage.setItem('kof_ultimaExportacion', String(Date.now()));
+  kofRevisarAviso();
+}
+
+// ===== Barra amarilla =====
+function kofRevisarAviso() {
+  const pend = tiempo('kof_ultimoGuardado') > tiempo('kof_ultimaExportacion');
+  const a = $('aviso');
+  a.textContent = '⚠️ Tienes semanas guardadas sin exportar. Toca aquí para exportar.';
+  a.style.display = pend ? 'block' : 'none';
+}
+
+// ===== Eventos =====
+$('ini').addEventListener('change', () => {
+  const ini = $('ini').value;
+  if (ini) {
+    const d = new Date(ini + 'T12:00:00');
+    d.setDate(d.getDate() + 6);
+    $('fin').value = d.toISOString().slice(0, 10);
+  }
+  pintarSemana();
+});
+$('fin').addEventListener('change', pintarSemana);
+$('prop').addEventListener('input', calcular);
+$('emps').addEventListener('input', cambioEmpleado);
+$('emps').addEventListener('change', cambioEmpleado);
+$('emps').addEventListener('click', ev => {
+  const i = ev.target.dataset.del;
+  if (i === undefined) return;
+  if (confirm('¿Eliminar a ' + (emps[i].nombre || 'este empleado') + '?')) {
+    emps.splice(i, 1); SV('kof_emp', emps); pintarEmpleados(); calcular();
+  }
+});
+$('btnAdd').addEventListener('click', () => {
+  emps.push({ nombre: '', salario: 0, dias: 0, extras: 0, activo: true });
+  SV('kof_emp', emps); pintarEmpleados(); calcular();
+});
+$('btnGuardar').addEventListener('click', guardarSemana);
+$('btnExportar').addEventListener('click', exportarLibro);
+$('aviso').addEventListener('click', exportarLibro);
+
+// ===== Inicio =====
+const f0 = LV('kof_fechas', {});
+$('ini').value = f0.ini || '';
+$('fin').value = f0.fin || '';
+$('prop').value = LV('kof_prop', 0);
+pintarEmpleados();
+pintarSemana();
+kofRevisarAviso();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
