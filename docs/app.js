@@ -3,7 +3,9 @@ const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){retu
 const SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const m=n=>'$'+(+n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;');
-const LEY='Recibí de Koffein la cantidad señalada en este recibo por concepto de salario, horas extras y propinas correspondientes al periodo indicado, manifestando mi conformidad y que no se me adeuda cantidad alguna por dicho periodo. Documento que sirve como constancia de pago conforme al Art. 804 de la Ley Federal del Trabajo.';
+const LEY='Recibí de Koffein la cantidad señalada en este recibo por concepto de salario, horas extras y propinas correspondientes al 
+  periodo indicado, manifestando mi conformidad y que no se me adeuda cantidad alguna por dicho periodo. Documento que sirve como constancia 
+  de pago conforme al Art. 804 de la Ley Federal del Trabajo.';
 
 let emp=LS('kof_emp',null);
 if(!emp){emp=[];for(let i=1;i<=7;i++)emp.push({id:Date.now()+i,nombre:'Empleado '+i,sal:0,dias:6,hx:0,activo:true});SV('kof_emp',emp);}
@@ -22,7 +24,7 @@ e.sueldo=sal*d;e.extra=sal/8*2*h;e.propina=jt?P*j/jt:0;e.total=e.sueldo+e.extra+
 const t=document.getElementById('r'+e.id);
 if(t)t.innerHTML=`<tr><td>Sueldo ordinario (${d} días)</td><td>${m(e.sueldo)}</td></tr>
 <tr><td>Horas extras (${h} h, pago doble)</td><td>${m(e.extra)}</td></tr>
-<tr><td>Propinas (${j.toFixed(2)} jornadas)</td><td>${m(e.propina)}</td></tr>
+<tr><td>Propinas</td><td>${m(e.propina)}</td></tr>
 <tr class="tot"><td>TOTAL A PAGAR</td><td>${m(e.total)}</td></tr>`;});
 SV('kof_emp',emp);}
 
