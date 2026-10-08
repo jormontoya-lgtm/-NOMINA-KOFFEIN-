@@ -58,8 +58,13 @@ $('#add').onclick=()=>{emp.push({id:Date.now(),nombre:'Nuevo empleado',sal:0,dia
 $('#save').onclick=()=>{const ini=$('#ini').value;if(!ini)return alert('Indica la fecha de inicio');calc();
 const h=LS('kof_hist',[]).filter(w=>w.ini!==ini);
 h.push({ini,fin:$('#fin').value,rows:act().map(e=>({id:e.id,nombre:e.nombre,total:e.total}))});
-SV('kof_hist',h);alert('Semana guardada ✅');};
-
+SV('kof_hist',h);
+localStorage.setItem('kof_ultimoGuardado', Date.now());
+if (confirm('Semana guardada ✅\n\n¿Quieres exportar el Excel ahora?')) {
+  $('#xls').click();
+}
+if (typeof kofRevisarAviso === 'function') kofRevisarAviso();
+};
 $('#xls').onclick=()=>{const mes=$('#ini').value.slice(0,7);
 const sem=LS('kof_hist',[]).filter(w=>w.ini.slice(0,7)===mes).sort((a,b)=>a.ini<b.ini?-1:1);
 if(!sem.length)return alert('No hay semanas guardadas en este mes');
@@ -68,10 +73,10 @@ const ids=[],nom={};sem.forEach(w=>w.rows.forEach(r=>{if(!ids.includes(r.id))ids
 const data=[['Empleado',...sem.map(w=>w.ini+' a '+w.fin),'Total mes']];
 ids.forEach(id=>{let t=0;const row=[nom[id]];sem.forEach(w=>{const r=w.rows.find(x=>x.id==id);const v=r?Math.round(r.total*100)/100:0;t+=v;row.push(v)});row.push(Math.round(t*100)/100);data.push(row)});
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Nomina');
-XLSX.writeFile(libro, kofNombreArchivo());
+XLSX.writeFile(wb, kofNombreArchivo());
 localStorage.setItem('kof_ultimaExportacion', Date.now());
-
 render();
+if (typeof kofRevisarAviso === 'function') kofRevisarAviso();};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 function totales(){const a=act();
 $('#tsal').value=m(a.reduce((s,e)=>s+(e.sueldo||0),0));
