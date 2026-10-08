@@ -61,19 +61,39 @@ function cambioEmpleado(ev) {
 }
 
 // ===== Cálculo y recibos =====
+const N = v => parseFloat(String(v ?? '').replace(',', '.')) || 0;
+
 function calcular() {
-  const tot = parseFloat($('prop').value) || 0;
+  const tot = N($('prop').value);
   SV('kof_prop', tot);
-  const act = emps.filter(e => e.activo !== false);
-  const jt = act.reduce((s, e) => s + (e.dias || 0) + (e.extras || 0) / 8, 0);
+  const act = emps.filter(e => e.activo !== false && e.activo !== 'false');
+  const jor = e => N(e.dias) + N(e.extras) / 8;
+  const jt = act.reduce((s, e) => s + jor(e), 0);
 
   const res = act.map(e => {
-    const j = (e.dias || 0) + (e.extras || 0) / 8;
-    const sueldo = (e.salario || 0) * (e.dias || 0);
-    const extra = (e.extras || 0) * ((e.salario || 0) / 8) * 2;
-    const propina = jt ? tot * j / jt : 0;
-    return { nombre: e.nombre || 'Sin nombre', dias: e.dias || 0, extras: e.extras || 0, sueldo, extra, propina, total: sueldo + extra + propina };
+    const dias = N(e.dias), extras = N(e.extras), sal = N(e.salario);
+    const sueldo = sal * dias;
+    const extra = extras * (sal / 8) * 2;
+    const propina = jt ? tot * jor(e) / jt : 0;
+    return { nombre: e.nombre || 'Sin nombre', dias, extras, sueldo, extra, propina, total: sueldo + extra + propina };
   });
+
+  // Resumen de totales
+  const S = k => res.reduce((s, e) => s + e[k], 0);
+  $('resumen').innerHTML = res.length ? `
+  <div class="card">
+    <h2>Percepciones semanales totales</h2>
+    <table>
+      <tr><td><b>Empleado</b></td><td><b>Propinas</b></td><td><b>Total</b></td></tr>
+      ${res.map(e => `<tr><td>${e.nombre}</td><td>${m(e.propina)}</td><td>${m(e.total)}</td></tr>`).join('')}
+    </table>
+    <table style="margin-top:10px">
+      <tr><td>Sueldos</td><td>${m(S('sueldo'))}</td></tr>
+      <tr><td>Horas extra</td><td>${m(S('extra'))}</td></tr>
+      <tr><td>Propinas repartidas</td><td>${m(S('propina'))}</td></tr>
+      <tr class="tot"><td>Total a pagar</td><td>${m(S('total'))}</td></tr>
+    </table>
+  </div>` : '';
 
   const sem = $('semana').dataset.n || '';
   $('recibos').innerHTML = res.map(e => `
@@ -93,6 +113,7 @@ function calcular() {
   </div>`).join('');
   return res;
 }
+
 
 // ===== Guardar semana =====
 function guardarSemana() {
