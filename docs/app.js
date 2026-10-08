@@ -237,3 +237,12 @@ pintarSemana();
 kofRevisarAviso();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+// ===== Evitar que la página se mueva al firmar =====
+document.addEventListener('touchmove', function (e) {
+  if (e.target && e.target.tagName === 'CANVAS') e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('touchstart', function (e) {
+  if (e.target && e.target.tagName === 'CANVAS') e.preventDefault();
+}, { passive: false });
+
