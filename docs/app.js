@@ -84,8 +84,8 @@ function calcular() {
   <div class="card">
     <h2>Percepciones semanales totales</h2>
     <table>
-      <tr><td><b>Empleado</b></td><td><b>Propinas</b></td><td><b>Total</b></td></tr>
-      ${res.map(e => `<tr><td>${e.nombre}</td><td>${m(e.propina)}</td><td>${m(e.total)}</td></tr>`).join('')}
+      <tr><td><b>Empleado</b></td><td><b>Salario</b></td><td><b>Propinas</b></td><td><b>Total</b></td></tr>
+      ${res.map(e => `<tr><td>${e.nombre}</td><td>${m(e.sueldo + e.extra)}</td><td>${m(e.propina)}</td><td>${m(e.total)}</td></tr>`).join('')}
     </table>
     <table style="margin-top:10px">
       <tr><td>Sueldos</td><td>${m(S('sueldo'))}</td></tr>
@@ -108,10 +108,31 @@ function calcular() {
     <div class="ley" style="color:#333"><b style="color:#333">Declaración de conformidad</b><br>
       Recibí de conformidad la cantidad arriba indicada por concepto de sueldo, horas extra y propinas
       correspondientes a la semana ${sem}, sin que se me adeude cantidad alguna por estos conceptos.
-      <div class="firma">Firma: ______________________</div>
+        <div class="firma">Firma:<br>
+        <canvas class="pad" width="600" height="200" data-k="firma_${sem}_${e.nombre}"></canvas>
+        <button class="no-print borrar" type="button">Borrar firma</button>
+      </div>
+
     </div>
   </div>`).join('');
+    document.querySelectorAll('.pad').forEach(firmaPad);
+
   return res;
+}
+
+// ===== Firma digital =====
+function firmaPad(c) {
+  const x = c.getContext('2d'), k = c.dataset.k;
+  x.lineWidth = 3; x.lineCap = 'round'; x.strokeStyle = '#000';
+  const g = localStorage.getItem(k);
+  if (g) { const i = new Image(); i.onload = () => x.drawImage(i, 0, 0, c.width, c.height); i.src = g; }
+  let d = false;
+  const p = ev => { const r = c.getBoundingClientRect();
+    return [(ev.clientX - r.left) * c.width / r.width, (ev.clientY - r.top) * c.height / r.height]; };
+  c.onpointerdown = ev => { d = true; c.setPointerCapture(ev.pointerId); const [a, b] = p(ev); x.beginPath(); x.moveTo(a, b); };
+  c.onpointermove = ev => { if (!d) return; const [a, b] = p(ev); x.lineTo(a, b); x.stroke(); };
+  c.onpointerup = c.onpointercancel = () => { if (!d) return; d = false; localStorage.setItem(k, c.toDataURL()); };
+  c.nextElementSibling.onclick = () => { x.clearRect(0, 0, c.width, c.height); localStorage.removeItem(k); };
 }
 
 
@@ -190,6 +211,7 @@ $('btnAdd').addEventListener('click', () => {
 $('btnGuardar').addEventListener('click', guardarSemana);
 $('btnExportar').addEventListener('click', exportarLibro);
 $('aviso').addEventListener('click', exportarLibro);
+if ($('btnPrint')) $('btnPrint').addEventListener('click', () => { calcular(); setTimeout(() => window.print(), 300); });
 
 // ===== Inicio =====
 const f0 = LV('kof_fechas', {});
