@@ -211,7 +211,21 @@ $('btnAdd').addEventListener('click', () => {
 $('btnGuardar').addEventListener('click', guardarSemana);
 $('btnExportar').addEventListener('click', exportarLibro);
 $('aviso').addEventListener('click', exportarLibro);
-if ($('btnPrint')) $('btnPrint').addEventListener('click', () => { calcular(); setTimeout(() => window.print(), 300); });
+
+// ===== Imprimir / PDF =====
+(function () {
+  let b = document.getElementById('btnPrint');
+  if (!b) {
+    b = document.createElement('button');
+    b.id = 'btnPrint';
+    b.textContent = 'Imprimir / PDF';
+    document.querySelector('.botones').appendChild(b);
+  }
+  b.onclick = function () {
+    try { calcular(); } catch (e) { alert('Error al calcular: ' + e.message); }
+    setTimeout(function () { window.print(); }, 300);
+  };
+})();
 
 // ===== Inicio =====
 const f0 = LV('kof_fechas', {});
