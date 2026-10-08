@@ -27,6 +27,33 @@ td:last-child{text-align:right}
 .botones{position:fixed;bottom:0;left:0;right:0;display:flex;gap:8px;padding:10px;background:#f2efe9}
 .botones button{flex:1;margin:0}
 #aviso{display:none;position:sticky;top:0;z-index:9;background:#ffd84d;color:#333;padding:10px;border-radius:8px;margin-bottom:10px;font-weight:bold;text-align:center}
+  /* Barra inferior en una sola línea */
+.botones{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  gap:6px;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+}
+.botones button{
+  flex:1 1 0;
+  min-width:0;
+  padding:10px 4px;
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+/* Espacio para que la barra no tape el contenido */
+body{ padding-bottom:80px; }
+
+/* Firma: que el dedo no mueva la página */
+canvas{
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
