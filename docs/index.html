@@ -33,7 +33,6 @@ td:last-child{text-align:right}
 <body>
 <div id="aviso"></div>
 <div style="text-align:center"><img src="koffein-icon.png" alt="Koffein" style="width:110px;border-radius:20px;margin-top:6px"></div>
-<div style="text-align:center"><img src="koffein-icon.png" alt="Koffein" style="width:110px;border-radius:20px;margin-top:6px"></div>
 <h1>Koffein</h1>
 
 <section class="card">
@@ -43,17 +42,18 @@ td:last-child{text-align:right}
 </section>
 
 <section class="card">
-  <h2>Empleados</h2>
-  <div id="emps"></div>
-  <button id="btnAdd">+ Agregar empleado</button>
-</section>
-
-<section class="card">
   <label>Propinas totales de la semana ($)
     <input type="number" id="prop" inputmode="decimal" value="0">
   </label>
 </section>
 
+<section class="card">
+  <h2>Empleados</h2>
+  <div id="emps"></div>
+  <button id="btnAdd">+ Agregar empleado</button>
+</section>
+
+<div id="resumen"></div>
 <div id="recibos"></div>
 
 <div class="botones">
@@ -61,6 +61,6 @@ td:last-child{text-align:right}
   <button id="btnExportar">Exportar Excel</button>
 </div>
 
-<script src="app.js?v=16"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>
