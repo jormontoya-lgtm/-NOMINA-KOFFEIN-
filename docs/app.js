@@ -68,7 +68,8 @@ const ids=[],nom={};sem.forEach(w=>w.rows.forEach(r=>{if(!ids.includes(r.id))ids
 const data=[['Empleado',...sem.map(w=>w.ini+' a '+w.fin),'Total mes']];
 ids.forEach(id=>{let t=0;const row=[nom[id]];sem.forEach(w=>{const r=w.rows.find(x=>x.id==id);const v=r?Math.round(r.total*100)/100:0;t+=v;row.push(v)});row.push(Math.round(t*100)/100);data.push(row)});
 const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(data),'Nomina');
-XLSX.writeFile(wb,'Nomina_Koffein_'+mes+'.xlsx');};
+XLSX.writeFile(libro, kofNombreArchivo());
+localStorage.setItem('kof_ultimaExportacion', Date.now());
 
 render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
