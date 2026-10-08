@@ -43,7 +43,7 @@ $('#lista').innerHTML=act().map(e=>`<div class="card">
 <table class="t" id="r${e.id}"></table>
 <canvas id="f${e.id}" width="600" height="160"></canvas>
 <div class="lf"><span>Firma del empleado</span><button class="lim" data-id="${e.id}">Borrar firma</button></div>
-<div class="ley"><b>Declaración de Conformidad Laboral (Art. 804 LFT México)</b><br>${LEY}</div>
+<div class="ley" style="color:#333"><b style="color:#333">Declaración de Conformidad Laboral (Art. 804 LFT México)</b><br>${LEY}</div>
 </div>`).join('');
 act().forEach(e=>firma(document.getElementById('f'+e.id)));calc();}
 
