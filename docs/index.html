@@ -65,21 +65,39 @@ canvas{
     background: #fff !important;
   }
 
-  /* El resumen va solo en su propia hoja */
+  /* Ocultar todo lo que no es resumen ni recibos */
+  body > *:not(#resumen):not(#recibos) {
+    display: none !important;
+  }
+  button, .botones, .del, input[type="button"] {
+    display: none !important;
+  }
+
+  /* Quitar flex/grid para que funcionen los saltos de página */
+  #resumen, #recibos {
+    display: block !important;
+  }
+
+  /* Resumen en su propia hoja */
   #resumen {
     break-after: page;
     page-break-after: always;
   }
 
-  /* Un recibo por hoja, sin cortes */
-  .recibo {
-    box-sizing: border-box;
+  /* Cada recibo en su propia hoja, sin importar su clase */
+  #recibos > * {
+    display: block !important;
+    float: none !important;
+    width: 100% !important;
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
+    box-sizing: border-box;
     margin: 0 !important;
     padding: 6mm 8mm !important;
     border: 1px solid #999;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     font-size: 13px !important;
     line-height: 1.4;
     break-inside: avoid;
@@ -89,31 +107,20 @@ canvas{
   }
 
   /* Que el último recibo no deje una hoja en blanco */
-  .recibo:last-of-type {
+  #recibos > *:last-child {
     break-after: auto;
     page-break-after: auto;
   }
 
-  .recibo table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .recibo td, .recibo th {
-    padding: 3px 6px !important;
-  }
+  #recibos table { width: 100%; border-collapse: collapse; }
+  #recibos td, #recibos th { padding: 3px 6px !important; }
 
   /* Firma */
-  .recibo canvas {
+  #recibos canvas {
     width: 100% !important;
     height: 40mm !important;
     border: none !important;
     border-bottom: 1px solid #000 !important;
-  }
-
-  /* Ocultar botones y elementos de la app */
-  button, .botones, input[type="button"] {
-    display: none !important;
   }
 }
   
