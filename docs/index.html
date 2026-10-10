@@ -56,7 +56,7 @@ canvas{
 @media print {
   @page {
     size: letter portrait;   /* usa "A4 portrait" si imprimes en A4 */
-    margin: 8mm;
+    margin: 12mm;
   }
 
   html, body {
@@ -71,24 +71,27 @@ canvas{
     page-break-after: always;
   }
 
-  /* Cada recibo ocupa media hoja */
+  /* Un recibo por hoja, sin cortes */
   .recibo {
     box-sizing: border-box;
-    height: 128mm;            /* media hoja carta. En A4: 138mm */
-    max-height: 128mm;
-    overflow: hidden;
-    margin: 0 0 3mm 0 !important;
-    padding: 4mm 6mm !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 6mm 8mm !important;
     border: 1px solid #999;
-    font-size: 11px !important;
-    line-height: 1.25;
+    font-size: 13px !important;
+    line-height: 1.4;
     break-inside: avoid;
     page-break-inside: avoid;
+    break-after: page;
+    page-break-after: always;
   }
 
-  .recibo h2, .recibo h3 {
-    font-size: 13px !important;
-    margin: 0 0 2mm 0 !important;
+  /* Que el último recibo no deje una hoja en blanco */
+  .recibo:last-of-type {
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .recibo table {
@@ -97,13 +100,13 @@ canvas{
   }
 
   .recibo td, .recibo th {
-    padding: 1px 4px !important;
+    padding: 3px 6px !important;
   }
 
-  /* Firma más compacta */
+  /* Firma */
   .recibo canvas {
     width: 100% !important;
-    height: 28mm !important;
+    height: 40mm !important;
     border: none !important;
     border-bottom: 1px solid #000 !important;
   }
@@ -113,7 +116,6 @@ canvas{
     display: none !important;
   }
 }
-
   
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
